@@ -179,3 +179,20 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+
+
+# ==========================================
+# AngleGame Multi-Folder Project Extensions
+# ==========================================
+
+# --- Azure Functions Security Additions ---
+**/local.settings.json
+
+# --- React Frontend Node Packages & Builds ---
+**/AngleGameFrontend/node_modules/
+**/AngleGameFrontend/dist/
+
+# --- IDE Workspace Tweaks ---
+.idea/
+.vscode/
