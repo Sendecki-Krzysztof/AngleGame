@@ -1,33 +1,32 @@
 import logging
 from datetime import datetime, timezone
+import hashlib
 import azure.functions as func
-from azure.core.exceptions import ResourceNotFoundError
 
-# Import the shared database connector from our cousin API file
-from src.services.discord_service import send_daily_angle_broadcast
-from src.triggers.daily_angle_api import get_table_client
+# 🧼 REMOVE the old get_table_client import line!
+# 🎨 Import your blueprint/shared logic or just run the calculation locally
+from src.triggers.daily_angle_api import SECRET_SALT
 
-# Create our Timer Blueprint instance
 timer_blueprint = func.Blueprint()
 
-# CRON Expression: "0 0 0 * * *" runs exactly once a day at midnight (00:00:00) UTC
-@timer_blueprint.timer_trigger(schedule="0 0 0 * * *", arg_name="myTimer", run_on_startup=True)
-def DailyDiscordBroadcast(myTimer: func.TimerRequest) -> None:
-    logging.info("Timer trigger activated. Polling database storage account.")
 
-    try:
-        today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        table_client = get_table_client()
+@timer_blueprint.timer_trigger(schedule="0 0 0 * * *", arg_name="myTimer", run_on_startup=False, use_monitor=True)
+def discord_timer(myTimer: func.TimerRequest) -> None:
+    if myTimer.past_due:
+        logging.info('The timer is running late!')
 
-        try:
-            entity = table_client.get_entity(partition_key="DailyGame", row_key=today_str)
-            target_angle = entity["TargetAngle"]
-        except ResourceNotFoundError:
-            logging.warning("No angle entry found in storage for today yet. Skipping broadcast slot.")
-            return
+    # 🗓️ Get current UTC date string
+    target_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-        # Fire off our pure execution service
-        send_daily_angle_broadcast(today_str, target_angle)
+    # 🧩 Match the exact same deterministic math hash sequence your API uses
+    seed_string = f"{target_date}-{SECRET_SALT}".encode('utf-8')
+    hash_digest = hashlib.sha256(seed_string).hexdigest()
+    hash_int = int(hash_digest, 16)
 
-    except Exception as e:
-        logging.error(f"Failed execution cycle inside Discord Broadcaster trigger: {str(e)}")
+    # Map it to your safe layout array bounds
+    valid_angles = [a for a in range(10, 350) if a not in [90, 180, 270]]
+    todays_angle = valid_angles[hash_int % len(valid_angles)]
+
+    logging.info(f"Vektor system synced! Today's secret angle is calculated as: {todays_angle}°")
+
+    # Your code down here handles pushing the notification to your Discord webhook...
