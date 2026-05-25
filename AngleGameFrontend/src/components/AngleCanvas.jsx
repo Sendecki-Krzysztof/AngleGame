@@ -14,7 +14,7 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
 
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
-        const radius = 130; // Adjusted slightly to fit comfortably in the new card framing
+        const radius = 130;
 
         // Standard baseline angles to match the original layout rotation behavior
         const baselineOffsetAngle = 30 * Math.PI / 180;
@@ -36,7 +36,12 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
         const totalGuesses = guessHistory.length;
 
         guessHistory.forEach((attempt, index) => {
-            const guessRad = baselineOffsetAngle - (attempt.value * Math.PI) / 180;
+            // ✅ Safety Hydration Check: Read .value if object, handle raw number gracefully as fallback
+            const guessValue = attempt && typeof attempt === 'object' ? attempt.value : attempt;
+
+            if (guessValue === undefined || isNaN(guessValue)) return;
+
+            const guessRad = baselineOffsetAngle - (guessValue * Math.PI) / 180;
             const guessEndX = cx + radius * Math.cos(guessRad);
             const guessEndY = cy + radius * Math.sin(guessRad);
 
@@ -61,7 +66,7 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
         ctx.setLineDash([]);
 
         // --- 3. Draw Base Reference Ray Line ---
-        ctx.strokeStyle = "#f97316"; // Bright Orange Base Ray (Visible on dark backgrounds)
+        ctx.strokeStyle = "#f97316"; // Bright Orange Base Ray
         ctx.lineWidth = 3.5;
         ctx.lineCap = "round";
         ctx.beginPath();

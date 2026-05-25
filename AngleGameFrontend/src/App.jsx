@@ -14,39 +14,45 @@ function App() {
   const MAX_ATTEMPTS = 4;
 
   useEffect(() => {
-    // 1. Calculate local calendar string first
-    const localDate = new Date();
-    const year = localDate.getFullYear();
-    const month = String(localDate.getMonth() + 1).padStart(2, '0');
-    const day = String(localDate.getDate()).padStart(2, '0');
+    // 1. 🌍 Calculate current universal UTC calendar string
+    const utcDate = new Date();
+    const year = utcDate.getUTCFullYear();
+    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(utcDate.getUTCDate()).padStart(2, '0');
     const todayStr = `${year}-${month}-${day}`;
+
     setGameDate(todayStr);
 
-    // 2. Append the local date parameter to your API request URL
+    // 2. Query the backend engine using the global timeline
     fetch(`http://localhost:7071/api/GetDailyAngle?date=${todayStr}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to retrieve daily puzzle state.');
         return res.json();
       })
       .then((data) => {
-        console.log("Database Payload Received:", data);
-        console.log("Game Date Set To:", todayStr);
+        console.log("Vector Payload Received:", data);
 
-        const incomingAngle = data.TargetAngle !== undefined ? data.TargetAngle : data.targetAngle;
+        const incomingAngle = data.targetAngle !== undefined ? data.targetAngle : data.TargetAngle;
 
         if (incomingAngle !== undefined) {
           setTargetAngle(parseInt(incomingAngle, 10));
         } else {
-          console.error("Target angle field missing from DB payload entity.", data);
+          console.error("Target angle field missing from payload.", data);
           setTargetAngle(0);
         }
 
-        // Restored History Matrix State using production cache keys
-        const savedState = localStorage.getItem(`angle_pipeline_state_${todayStr}`);
+        // 3. 📦 Load state safely using the dedicated UTC key string
+        const cacheKey = `vektor_state_${todayStr}`;
+        const savedState = localStorage.getItem(cacheKey);
+
         if (savedState) {
           const parsed = JSON.parse(savedState);
-          setGuessHistory(parsed.history);
-          setGameOver(parsed.gameOver);
+          setGuessHistory(parsed.history || []);
+          setGameOver(parsed.gameOver || false);
+        } else {
+          setGuessHistory([]);
+          setGameOver(false);
+          setCurrentGuess("");
         }
 
         setLoading(false);
@@ -60,16 +66,22 @@ function App() {
 
   const handleGuessSubmit = (e) => {
     e.preventDefault();
-    const guessNum = parseInt(currentGuess, 10);
+    let guessNum = parseInt(currentGuess, 10);
 
-    if (isNaN(guessNum) || guessNum < 1 || guessNum > 359) return;
+    // 1. Validate it's a real number and not a negative value
+    if (isNaN(guessNum) || guessNum < 0) return;
 
+    // 2. Wrap around angles using modulo 360 (e.g., 360 -> 0, 370 -> 10, 450 -> 90)
+    guessNum = guessNum % 360;
+
+    // 3. Prevent duplicate attempts
     const alreadyGuessed = guessHistory.some(attempt => attempt.value === guessNum);
     if (alreadyGuessed) {
       setCurrentGuess('');
       return;
     }
 
+    // 4. Proximity validation math
     const diff = Math.abs(targetAngle - guessNum);
     let status = 'Cold';
     let indicatorEmoji = '⬛';
@@ -88,15 +100,20 @@ function App() {
       indicatorEmoji = '🟨';
     }
 
-    const direction = guessNum < targetAngle ? '⬆️' : '⬇️';
-    const newHistory = [...guessHistory, { value: guessNum, direction, status, emoji: indicatorEmoji }];
+    const direction = guessNum < targetAngle ? 'Higher ⬆️' : 'Lower⬇️';
     const isWon = diff === 0;
 
+    // 5. Construct the updated history array object matrix
+    const newHistory = [...guessHistory, { value: guessNum, direction, status, emoji: indicatorEmoji }];
+
+    // 6. Update React App State layout matrix
     setGuessHistory(newHistory);
     setCurrentGuess('');
     setGameOver(isWon);
 
-    localStorage.setItem(`angle_pipeline_state_${gameDate}`, JSON.stringify({
+    // 7. 📦 Lock down the state under your clean UTC date-stamped key format
+    const cacheKey = `vektor_state_${gameDate}`;
+    localStorage.setItem(cacheKey, JSON.stringify({
       history: newHistory,
       gameOver: isWon
     }));
@@ -104,13 +121,11 @@ function App() {
 
   const shareResults = () => {
     const attemptCount = guessHistory.length;
-    // Create a clean, spoiler-free bragging string
     const shareText = `Got that angle in ${attemptCount} ${attemptCount === 1 ? 'attempt' : 'attempts'}! Think you can do better? Play at: ${window.location.origin}`;
 
     navigator.clipboard.writeText(shareText)
       .then(() => {
         setCopied(true);
-        // Flip the text state back to normal after 2 seconds
         setTimeout(() => {
           setCopied(false);
         }, 2000);
@@ -122,7 +137,7 @@ function App() {
 
   const resetDevGame = () => {
     if (gameDate) {
-      localStorage.removeItem(`angle_pipeline_state_${gameDate}`);
+      localStorage.removeItem(`vektor_state_${gameDate}`);
       setGuessHistory([]);
       setGameOver(false);
       setCurrentGuess('');
@@ -141,6 +156,7 @@ function App() {
     </div>
   );
 
+  // 🧅 Slice the last 4 full history objects to pass down directly
   const canvasOnionSkinGuesses = guessHistory.slice(-4);
 
   return (
@@ -211,10 +227,9 @@ function App() {
 
               <div className="w-full max-h-40 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
                 {guessHistory
-                  .slice() // Creates a shallow copy so we don't mutate state
-                  .reverse() // Flips the render order
+                  .slice()
+                  .reverse()
                   .map((attempt) => {
-                    // Re-calculate the absolute chronological attempt number
                     const chronologicalIndex = guessHistory.indexOf(attempt);
 
                     return (
