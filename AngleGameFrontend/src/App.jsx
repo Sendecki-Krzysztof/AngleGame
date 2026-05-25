@@ -24,7 +24,8 @@ function App() {
     setGameDate(todayStr);
 
     // 2. Query the backend engine using the global timeline
-    fetch(`http://localhost:7071/api/GetDailyAngle?date=${todayStr}`)
+    fetch(`https://angle-game-api-b9dtbce4f8g4cxhq.northcentralus-01.azurewebsites.net/api/getdailyangle
+?date=${todayStr}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to retrieve daily puzzle state.');
         return res.json();
