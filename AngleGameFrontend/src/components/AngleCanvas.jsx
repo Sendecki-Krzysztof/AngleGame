@@ -12,10 +12,9 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
         // Clear the expanded pixel frame buffer
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Proportional scaling math for the larger canvas bounds
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
-        const radius = 150; // Increased from 95 to stretch across the new space
+        const radius = 130; // Adjusted slightly to fit comfortably in the new card framing
 
         // Standard baseline angles to match the original layout rotation behavior
         const baselineOffsetAngle = 30 * Math.PI / 180;
@@ -27,10 +26,9 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
         const terminalEndY = cy + radius * Math.sin(baselineOffsetAngle - (targetAngle * Math.PI) / 180);
 
         // --- 1. Draw Geometric Curved Indicator Arc ---
-        ctx.strokeStyle = "#2563eb";
-        ctx.lineWidth = 2; // Slightly thicker line to match scale
+        ctx.strokeStyle = "#38bdf8"; // Vibrant Sky Blue Arc
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        // Scaled the inner arc radius up to 40 so it's clearly visible
         ctx.arc(cx, cy, 40, baselineOffsetAngle, baselineOffsetAngle - (targetAngle * Math.PI) / 180, true);
         ctx.stroke();
 
@@ -43,15 +41,15 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
             const guessEndY = cy + radius * Math.sin(guessRad);
 
             const ageMultiplier = (index + 1) / totalGuesses;
-            const calculatedAlpha = 0.45 * ageMultiplier;
+            const calculatedAlpha = 0.5 * ageMultiplier;
 
-            ctx.strokeStyle = `rgba(99, 102, 241, ${calculatedAlpha})`;
+            ctx.strokeStyle = `rgba(129, 140, 248, ${calculatedAlpha})`; // Bright Indigo fade
 
             if (index === totalGuesses - 1) {
-                ctx.lineWidth = 3.5; // Thicker active guess line
+                ctx.lineWidth = 3;
                 ctx.setLineDash([]);
             } else {
-                ctx.lineWidth = 2; // Sharper historical tracker lines
+                ctx.lineWidth = 1.5;
                 ctx.setLineDash([3, 5]);
             }
 
@@ -63,8 +61,8 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
         ctx.setLineDash([]);
 
         // --- 3. Draw Base Reference Ray Line ---
-        ctx.strokeStyle = "#ea580c";
-        ctx.lineWidth = 3.5; // Scaled up thickness
+        ctx.strokeStyle = "#f97316"; // Bright Orange Base Ray (Visible on dark backgrounds)
+        ctx.lineWidth = 3.5;
         ctx.lineCap = "round";
         ctx.beginPath();
         ctx.moveTo(cx, cy);
@@ -72,23 +70,23 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
         ctx.stroke();
 
         // --- 4. Draw Mystery Terminal Arm Vector Ray ---
+        ctx.strokeStyle = "#f8fafc"; // Crisp Slate-White for the target ray
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.lineTo(terminalEndX, terminalEndY);
         ctx.stroke();
 
         // --- 5. Draw Central Node Vertex Pin ---
-        ctx.fillStyle = "#334155";
+        ctx.fillStyle = "#e2e8f0"; // Light slate core pin
         ctx.beginPath();
-        ctx.arc(cx, cy, 6, 0, 2 * Math.PI); // Scaled anchor hub up to 6px radius
+        ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
         ctx.fill();
 
     }, [targetAngle, guessHistory]);
 
     return (
-        <div className="flex items-center justify-center w-full my-6 bg-transparent">
-            {/* Expanded frame dimensions from 260x240 to 400x360 */}
-            <canvas ref={canvasRef} width={400} height={360} className="mx-auto" />
+        <div className="flex items-center justify-center w-full my-4 bg-transparent">
+            <canvas ref={canvasRef} width={400} height={340} className="mx-auto" />
         </div>
     );
 }

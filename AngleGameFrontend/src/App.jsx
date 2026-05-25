@@ -10,6 +10,8 @@ function App() {
   const [error, setError] = useState(null);
   const [gameDate, setGameDate] = useState('');
 
+  const MAX_ATTEMPTS = 4;
+
   useEffect(() => {
     fetch('http://localhost:7071/api/GetDailyAngle')
       .then((res) => {
@@ -46,7 +48,6 @@ function App() {
 
     const alreadyGuessed = guessHistory.some(attempt => attempt.value === guessNum);
     if (alreadyGuessed) {
-      alert(`You already guessed ${guessNum}°! Try a different vector trajectory.`);
       setCurrentGuess('');
       return;
     }
@@ -59,20 +60,19 @@ function App() {
       status = 'Perfect!';
       indicatorEmoji = '🟩';
     } else if (diff <= 3) {
-      status = 'Boiling!🔥';
+      status = 'Boiling! 🔥';
       indicatorEmoji = '🟥';
     } else if (diff <= 10) {
       status = 'Hot!';
       indicatorEmoji = '🟧';
     } else if (diff <= 25) {
-      status = 'Getting Hot';
+      status = 'Warm';
       indicatorEmoji = '🟨';
     }
 
     const direction = guessNum < targetAngle ? '⬆️' : '⬇️';
     const newHistory = [...guessHistory, { value: guessNum, direction, status, emoji: indicatorEmoji }];
 
-    // The match only finishes now when they hit the 100% accurate zone!
     const isWon = diff === 0;
 
     setGuessHistory(newHistory);
@@ -90,15 +90,13 @@ function App() {
     const cleanDate = gameDate.replace(/-/g, '/');
 
     let textBlock = `Angle Pipeline Challenge ${cleanDate} - ${totalTurns} Turns\n`;
-
     guessHistory.forEach(turn => {
       textBlock += `${turn.emoji} ${turn.value}° ${turn.direction}\n`;
     });
-
     textBlock += `Sent via AngleCloudPipeline App`;
 
     navigator.clipboard.writeText(textBlock);
-    alert('🎯 Performance metrics copied! Ready to paste into Discord.');
+    alert('🎯 Stats copied to clipboard!');
   };
 
   const resetDevGame = () => {
@@ -110,90 +108,120 @@ function App() {
     }
   };
 
-  if (loading) return <div className="flex h-screen items-center justify-center text-slate-500">Loading daily geometric parameters...</div>;
-  if (error) return <div className="flex h-screen items-center justify-center text-rose-500">❌ API Connection Error: {error}</div>;
+  if (loading) return (
+    <div className="flex h-screen items-center justify-center bg-slate-950 text-sm font-medium tracking-wide text-slate-400">
+      Loading daily parameters...
+    </div>
+  );
 
-  // 💡 CHRONOLOGICAL CLIPPING STEP: 
-  // We grab only the final 4 elements from our history array to pass down to the canvas
+  if (error) return (
+    <div className="flex h-screen items-center justify-center bg-slate-950 text-sm font-medium text-rose-400">
+      ❌ API Connection Error: {error}
+    </div>
+  );
+
   const canvasOnionSkinGuesses = guessHistory.slice(-4);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between bg-white px-4 py-8 text-slate-800 font-sans selection:bg-orange-100">
+    <div className="flex min-h-screen flex-col items-center justify-between bg-slate-950 px-4 py-12 text-slate-200 font-sans antialiased">
 
-      <div className="flex flex-col items-center w-full max-w-md">
-        <header className="flex flex-col items-center mb-4">
-          <div className="flex items-center space-x-2 text-4xl font-light tracking-wide text-orange-600">
-            <span className="text-3xl">📐</span>
-            <span className="font-semibold tracking-normal">ANGLE</span>
+      {/* Container to enforce sizing and constraint */}
+      <div className="flex flex-col items-center w-full max-w-md flex-1 justify-center">
+
+        {/* Modern Header Section */}
+        <header className="flex flex-col items-center mb-6 text-center">
+          <div className="flex items-center space-x-2 text-2xl font-bold tracking-wider text-white">
+            <span className="text-xl bg-slate-900 border border-slate-800 p-2 rounded-xl shadow-md">📐</span>
+            <span className="bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent">ANGLE PIPELINE</span>
           </div>
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mt-2 font-semibold">Serverless Vector System</p>
         </header>
 
-        {/* Pass the explicitly sliced 4-item array down to our graphic component */}
-        <AngleCanvas targetAngle={targetAngle} guessHistory={canvasOnionSkinGuesses} />
+        {/* Core Game Card View */}
+        <main className="w-full bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 shadow-2xl flex flex-col items-center">
 
-        {!gameOver ? (
-          <form onSubmit={handleGuessSubmit} className="flex items-center space-x-2 mt-6">
-            <input
-              type="text"
-              pattern="[0-9]*"
-              inputMode="numeric"
-              maxLength="3"
-              value={currentGuess}
-              onChange={(e) => setCurrentGuess(e.target.value)}
-              className="w-28 text-center py-2 px-3 text-lg border-2 border-slate-400 rounded-lg focus:outline-none focus:border-orange-500 font-mono"
-              autoFocus
-            />
-            <button
-              type="submit"
-              className="bg-slate-300 hover:bg-slate-400 text-slate-800 font-medium py-2 px-4 rounded-lg border border-slate-400 shadow-sm transition"
-            >
-              Guess!
-            </button>
-          </form>
-        ) : (
-          <div className="mt-6 text-center space-y-3 flex flex-col items-center">
-            <p className="text-xl font-semibold text-emerald-600">
-              🎉 Congratulations! You nailed it in {guessHistory.length} attempts!
-            </p>
-            <button
-              onClick={shareResults}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-6 rounded-xl shadow-md transition transform active:scale-95"
-            >
-              🔗 Share Score Matrix
-            </button>
+          {/* Framed Vector Canvas Container */}
+          <div className="w-full bg-slate-950/80 rounded-xl border border-slate-800 shadow-inner flex items-center justify-center overflow-hidden relative">
+            <AngleCanvas targetAngle={targetAngle} guessHistory={canvasOnionSkinGuesses} />
           </div>
-        )}
 
-        {/* Scalable Scrolling Guess Table */}
-        <div className="w-full max-w-xs mt-6 flex flex-col items-center">
-          <span className="text-xs text-slate-500 font-medium mb-2">
-            Total Attempts Filed: {guessHistory.length}
-          </span>
-
-          {/* Constrained max-height container with an auto overflow scroll behavior */}
-          <div className="w-full max-h-48 overflow-y-auto space-y-1 bg-slate-100 p-1 rounded-xl shadow-inner border border-slate-200">
-            {guessHistory.map((attempt, index) => (
-              <div
-                key={index}
-                className="grid grid-cols-3 items-center text-center bg-white border border-slate-200 py-1.5 px-3 rounded-lg shadow-sm text-sm font-medium"
-              >
-                <span className="font-mono text-slate-700">{attempt.value}°</span>
-                <span className="text-base text-blue-500 font-bold">{attempt.direction}</span>
-                <span className="text-slate-600 text-xs tracking-tight">{attempt.status}</span>
+          {/* Interactive States Container */}
+          <div className="w-full mt-6 min-h-[72px] flex flex-col items-center justify-center">
+            {!gameOver ? (
+              <form onSubmit={handleGuessSubmit} className="flex items-center space-x-2 w-full max-w-xs">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    pattern="[0-9]*"
+                    inputMode="numeric"
+                    maxLength="3"
+                    value={currentGuess}
+                    onChange={(e) => setCurrentGuess(e.target.value)}
+                    placeholder="Enter degrees (1-359)"
+                    className="w-full text-center py-2.5 px-4 bg-slate-950 border border-slate-800 rounded-xl focus:outline-none focus:border-orange-500 text-base font-mono text-white transition-colors placeholder:text-slate-600 shadow-inner"
+                    autoFocus
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 font-mono text-sm pointer-events-none">°</span>
+                </div>
+                <button
+                  type="submit"
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-medium py-2.5 px-5 rounded-xl shadow-md shadow-orange-500/10 transition active:scale-95 text-sm"
+                >
+                  Guess
+                </button>
+              </form>
+            ) : (
+              <div className="text-center space-y-3 w-full animate-fade-in">
+                <p className="text-sm font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 py-2 px-4 rounded-xl inline-block">
+                  🎉 Completed in {guessHistory.length} attempts!
+                </p>
+                <button
+                  onClick={shareResults}
+                  className="w-full max-w-xs bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-2.5 px-6 rounded-xl border border-slate-700 shadow-sm transition active:scale-95 text-sm flex items-center justify-center space-x-2 mx-auto"
+                >
+                  <span>🔗 Share Score Matrix</span>
+                </button>
               </div>
-            ))}
+            )}
           </div>
-        </div>
 
-        <div className="mt-6 opacity-30 hover:opacity-100 transition">
-          <button onClick={resetDevGame} className="text-xs font-mono bg-slate-200 px-2 py-1 rounded">
-            ⚙️ Clear Storage Reset
+          {/* Structured History Log Panel */}
+          {guessHistory.length > 0 && (
+            <div className="w-full mt-6 border-t border-slate-800/80 pt-5 flex flex-col">
+              <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 px-1">
+                <span>Attempt Log</span>
+                <span>Count: {guessHistory.length}</span>
+              </div>
+
+              <div className="w-full max-h-40 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                {guessHistory.map((attempt, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-3 items-center text-center bg-slate-950/40 border border-slate-800/60 py-2 px-4 rounded-xl text-xs font-medium text-slate-300"
+                  >
+                    <span className="font-mono text-left text-slate-400 flex items-center space-x-1.5">
+                      <span className="text-[10px] text-slate-600 font-sans">#{index + 1}</span>
+                      <span className="text-slate-200 font-bold">{attempt.value}°</span>
+                    </span>
+                    <span className="text-sm font-bold text-blue-400 flex justify-center">{attempt.direction}</span>
+                    <span className="text-right text-[11px] text-slate-400 font-medium">{attempt.status}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Hidden Dev Options Link */}
+        <div className="mt-4 opacity-10 hover:opacity-40 transition duration-300">
+          <button onClick={resetDevGame} className="text-[10px] font-mono tracking-wider uppercase text-slate-500 hover:underline">
+            [Dev Reset Cache]
           </button>
         </div>
       </div>
 
-      <footer className="mt-8 text-xs text-slate-400">
-        <p>Privacy Policy - Terms</p>
+      <footer className="mt-8 text-[11px] font-medium tracking-wide text-slate-600">
+        <p>&copy; {new Date().getFullYear()} Angle Pipeline Platform</p>
       </footer>
     </div>
   );
