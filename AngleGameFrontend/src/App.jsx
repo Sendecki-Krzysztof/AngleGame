@@ -13,26 +13,35 @@ function App() {
   const MAX_ATTEMPTS = 4;
 
   useEffect(() => {
-    fetch('http://localhost:7071/api/GetDailyAngle')
+    // 1. Calculate local calendar string first
+    const localDate = new Date();
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+    setGameDate(todayStr);
+
+    // 2. Append the local date parameter to your API request URL
+    fetch(`http://localhost:7071/api/GetDailyAngle?date=${todayStr}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to retrieve daily puzzle state.');
-
         return res.json();
       })
       .then((data) => {
-        // 🕵️‍♂️ Spy on the exact incoming database keys
         console.log("Database Payload Received:", data);
-        console.log("Lowercase check:", data.targetAngle);
-        console.log("Uppercase check:", data.TargetAngle);
+        console.log("Game Date Set To:", todayStr);
 
-        setTargetAngle(data.TargetAngle || data.targetAngle || 0);
+        const incomingAngle = data.TargetAngle !== undefined ? data.TargetAngle : data.targetAngle;
 
-        setTargetAngle(data.targetAngle);
+        if (incomingAngle !== undefined) {
+          setTargetAngle(parseInt(incomingAngle, 10));
+        } else {
+          console.error("Target angle field missing from DB payload entity.", data);
+          setTargetAngle(0);
+        }
 
-        const todayStr = new Date().toISOString().split('T')[0];
-        setGameDate(todayStr);
-
-        const savedState = localStorage.getItem(`angle_wtf_${todayStr}`);
+        // Restored History Matrix State using production cache keys
+        const savedState = localStorage.getItem(`angle_pipeline_state_${todayStr}`);
         if (savedState) {
           const parsed = JSON.parse(savedState);
           setGuessHistory(parsed.history);
@@ -50,7 +59,7 @@ function App() {
 
   const handleGuessSubmit = (e) => {
     e.preventDefault();
-    const guessNum = parseInt(currentGuess);
+    const guessNum = parseInt(currentGuess, 10);
 
     if (isNaN(guessNum) || guessNum < 1 || guessNum > 359) return;
 
@@ -80,14 +89,13 @@ function App() {
 
     const direction = guessNum < targetAngle ? '⬆️' : '⬇️';
     const newHistory = [...guessHistory, { value: guessNum, direction, status, emoji: indicatorEmoji }];
-
     const isWon = diff === 0;
 
     setGuessHistory(newHistory);
     setCurrentGuess('');
     setGameOver(isWon);
 
-    localStorage.setItem(`angle_wtf_${gameDate}`, JSON.stringify({
+    localStorage.setItem(`angle_pipeline_state_${gameDate}`, JSON.stringify({
       history: newHistory,
       gameOver: isWon
     }));
@@ -109,7 +117,7 @@ function App() {
 
   const resetDevGame = () => {
     if (gameDate) {
-      localStorage.removeItem(`angle_wtf_${gameDate}`);
+      localStorage.removeItem(`angle_pipeline_state_${gameDate}`);
       setGuessHistory([]);
       setGameOver(false);
       setCurrentGuess('');
@@ -132,11 +140,8 @@ function App() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-between bg-slate-950 px-4 py-12 text-slate-200 font-sans antialiased">
-
-      {/* Container to enforce sizing and constraint */}
       <div className="flex flex-col items-center w-full max-w-md flex-1 justify-center">
 
-        {/* Modern Header Section */}
         <header className="flex flex-col items-center mb-6 text-center">
           <div className="flex items-center space-x-2 text-2xl font-bold tracking-wider text-white">
             <span className="text-xl bg-slate-900 border border-slate-800 p-2 rounded-xl shadow-md">📐</span>
@@ -145,15 +150,11 @@ function App() {
           <p className="text-[10px] uppercase tracking-widest text-slate-500 mt-2 font-semibold">Serverless Vector System</p>
         </header>
 
-        {/* Core Game Card View */}
         <main className="w-full bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 shadow-2xl flex flex-col items-center">
-
-          {/* Framed Vector Canvas Container */}
           <div className="w-full bg-slate-950/80 rounded-xl border border-slate-800 shadow-inner flex items-center justify-center overflow-hidden relative">
             <AngleCanvas targetAngle={targetAngle} guessHistory={canvasOnionSkinGuesses} />
           </div>
 
-          {/* Interactive States Container */}
           <div className="w-full mt-6 min-h-[72px] flex flex-col items-center justify-center">
             {!gameOver ? (
               <form onSubmit={handleGuessSubmit} className="flex items-center space-x-2 w-full max-w-xs">
@@ -193,7 +194,6 @@ function App() {
             )}
           </div>
 
-          {/* Structured History Log Panel */}
           {guessHistory.length > 0 && (
             <div className="w-full mt-6 border-t border-slate-800/80 pt-5 flex flex-col">
               <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 px-1">
@@ -220,7 +220,6 @@ function App() {
           )}
         </main>
 
-        {/* Hidden Dev Options Link */}
         <div className="mt-4 opacity-10 hover:opacity-40 transition duration-300">
           <button onClick={resetDevGame} className="text-[10px] font-mono tracking-wider uppercase text-slate-500 hover:underline">
             [Dev Reset Cache]

@@ -24,30 +24,40 @@ def GetDailyAngle(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Processing a request for the daily angle challenge.")
 
     try:
-        today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        # 🕵️‍♂️ Read the local calendar date from the frontend query parameters
+        target_date = req.params.get('date')
+
+        # Fallback to server UTC date if the frontend didn't pass one
+        if not target_date:
+            target_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            logging.info(f"No explicit date query string passed. Defaulting to UTC server time: {target_date}")
+        else:
+            logging.info(f"Frontend explicitly requested parameter fallback date row: {target_date}")
+
         table_client = get_table_client()
 
         try:
-            entity = table_client.get_entity(partition_key="DailyGame", row_key=today_str)
-            logging.info("Found existing challenge entry in storage.")
+            # 🎯 Use the validated target_date to fetch the precise row key
+            entity = table_client.get_entity(partition_key="DailyGame", row_key=target_date)
+            logging.info(f"Found existing challenge entry in storage for date: {target_date}")
             target_angle = entity["TargetAngle"]
         except ResourceNotFoundError:
-            logging.info("No challenge found for today. Generating new entity...")
+            logging.info(f"No challenge found for {target_date}. Generating new entity...")
             valid_angles = [a for a in range(10, 350) if a not in [90, 180, 270]]
             target_angle = random.choice(valid_angles)
 
             new_challenge = {
                 "PartitionKey": "DailyGame",
-                "RowKey": today_str,
+                "RowKey": target_date,
                 "TargetAngle": target_angle,
                 "ToleranceHot": 5,
                 "ToleranceWarm": 15,
             }
             table_client.create_entity(entity=new_challenge)
-            logging.info(f"Successfully saved challenge for {today_str} to database.")
+            logging.info(f"Successfully saved challenge for {target_date} to database.")
 
         game_payload = {
-            "gameId": today_str,
+            "gameId": target_date,
             "targetAngle": target_angle,
             "tolerances": {"hot": 5, "warm": 15},
             "status": "success",
