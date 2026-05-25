@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AngleCanvas from './components/AngleCanvas';
 
 function App() {
+  const [copied, setCopied] = useState(false);
   const [targetAngle, setTargetAngle] = useState(null);
   const [currentGuess, setCurrentGuess] = useState('');
   const [guessHistory, setGuessHistory] = useState([]);

@@ -5,7 +5,7 @@
   --text-h: #f1f5f9;
   --bg: #0f172a;
 
-  --code-bg: #0f172a;
+  --code-bg: #020617;
   --border: #1e293b;
 
   --accent: #f97316;
@@ -114,31 +114,23 @@ code {
   background: var(--code-bg);
 }
 
-/* 🕶️ CUSTOM DARK SCROLLBAR DESIGN ENGINE */
-
-/* 1. Target the global width of the scroll bar track column */
 .custom-scrollbar::-webkit-scrollbar {
   width: 7px;
 }
 
-/* 2. Style the background gutter channel track */
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: #020617;
-  /* Seamlessly blends with your slate log background */
   border-radius: 8px;
 }
 
-/* 3. Style the actual sliding draggable track handle */
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #334155;
   /* Smooth slate-700 gray track pill */
   border-radius: 8px;
   border: 1px solid #1e293b;
-  /* Crisp boundary edge protection line */
 }
 
-/* 4. Highlight the thumb pill when active or hovering */
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #475569;
-  /* Brightens subtly to slate-600 on interactive focus */
 }
