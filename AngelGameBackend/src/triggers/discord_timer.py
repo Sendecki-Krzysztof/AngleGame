@@ -28,5 +28,3 @@ def discord_timer(myTimer: func.TimerRequest) -> None:
     todays_angle = valid_angles[hash_int % len(valid_angles)]
 
     logging.info(f"Vektor system synced! Today's secret angle is calculated as: {todays_angle}°")
-
-    # Your code down here handles pushing the notification to your Discord webhook...
