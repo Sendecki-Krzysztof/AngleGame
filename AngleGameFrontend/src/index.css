@@ -1,21 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --text: #94a3b8;
+  --text-h: #f1f5f9;
+  --bg: #0f172a;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --code-bg: #0f172a;
+  --border: #1e293b;
+
+  --accent: #f97316;
+  --accent-bg: rgba(249, 115, 22, 0.1);
+  --accent-border: rgba(249, 115, 22, 0.4);
+  --social-bg: rgba(30, 41, 59, 0.5);
+  --shadow:
+    rgba(0, 0, 0, 0.4) 0 10px 20px -5px, rgba(0, 0, 0, 0.2) 0 6px 8px -6px;
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
@@ -114,4 +112,33 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* 🕶️ CUSTOM DARK SCROLLBAR DESIGN ENGINE */
+
+/* 1. Target the global width of the scroll bar track column */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* 2. Style the background gutter channel track */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #020617;
+  /* Seamlessly blends with your slate log background */
+  border-radius: 8px;
+}
+
+/* 3. Style the actual sliding draggable track handle */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #334155;
+  /* Smooth slate-700 gray track pill */
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  /* Crisp boundary edge protection line */
+}
+
+/* 4. Highlight the thumb pill when active or hovering */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+  /* Brightens subtly to slate-600 on interactive focus */
 }

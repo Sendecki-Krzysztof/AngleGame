@@ -139,7 +139,7 @@ function App() {
   const canvasOnionSkinGuesses = guessHistory.slice(-4);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between bg-slate-950 px-4 py-12 text-slate-200 font-sans antialiased">
+    <div className="w-full min-h-screen bg-slate-950 px-4 py-12 text-slate-200 font-sans antialiased flex flex-col items-center justify-between">
       <div className="flex flex-col items-center w-full max-w-md flex-1 justify-center">
 
         <header className="flex flex-col items-center mb-6 text-center">
