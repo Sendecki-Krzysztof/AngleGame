@@ -148,11 +148,10 @@ function App() {
       <div className="flex flex-col items-center w-full max-w-md flex-1 justify-center">
 
         <header className="flex flex-col items-center mb-6 text-center">
-          <div className="flex items-center space-x-2 text-2xl font-bold tracking-wider text-white">
-            <span className="text-xl bg-slate-900 border border-slate-800 p-2 rounded-xl shadow-md">📐</span>
-            <span className="bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent">ANGLE PIPELINE</span>
+          <div className="flex items-center space-x-2 text-5xl font-bold tracking-wider text-white">
+            <span className="bg-gradient-to-r from-orange-400 to-amber-500 bg-clip-text text-transparent">VEKTOR</span>
           </div>
-          <p className="text-[10px] uppercase tracking-widest text-slate-500 mt-2 font-semibold">Serverless Vector System</p>
+          <p className="text-[10px] uppercase tracking-widest text-slate-500 mt-2 font-semibold">An Angle Guessing Game</p>
         </header>
 
         <main className="w-full bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 shadow-2xl flex flex-col items-center">
@@ -245,7 +244,7 @@ function App() {
       </div>
 
       <footer className="mt-8 text-[11px] font-medium tracking-wide text-slate-600">
-        <p>&copy; {new Date().getFullYear()} Angle Pipeline Platform</p>
+        <p>&copy; {new Date().getFullYear()} Vector Angle Game</p>
       </footer>
     </div>
   );
