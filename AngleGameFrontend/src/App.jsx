@@ -103,17 +103,21 @@ function App() {
   };
 
   const shareResults = () => {
-    const totalTurns = guessHistory.length;
-    const cleanDate = gameDate.replace(/-/g, '/');
+    const attemptCount = guessHistory.length;
+    // Create a clean, spoiler-free bragging string
+    const shareText = `Got that angle in ${attemptCount} ${attemptCount === 1 ? 'attempt' : 'attempts'}! Think you can do better? Play at: ${window.location.origin}`;
 
-    let textBlock = `Angle Pipeline Challenge ${cleanDate} - ${totalTurns} Turns\n`;
-    guessHistory.forEach(turn => {
-      textBlock += `${turn.emoji} ${turn.value}° ${turn.direction}\n`;
-    });
-    textBlock += `Sent via AngleCloudPipeline App`;
-
-    navigator.clipboard.writeText(textBlock);
-    alert('🎯 Stats copied to clipboard!');
+    navigator.clipboard.writeText(shareText)
+      .then(() => {
+        setCopied(true);
+        // Flip the text state back to normal after 2 seconds
+        setTimeout(() => {
+          setCopied(false);
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy share payload string: ", err);
+      });
   };
 
   const resetDevGame = () => {
@@ -187,9 +191,13 @@ function App() {
                 </p>
                 <button
                   onClick={shareResults}
-                  className="w-full max-w-xs bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-2.5 px-6 rounded-xl border border-slate-700 shadow-sm transition active:scale-95 text-sm flex items-center justify-center space-x-2 mx-auto"
+                  disabled={copied}
+                  className={`w-full max-w-xs font-medium py-2.5 px-6 rounded-xl border shadow-sm transition active:scale-95 text-sm flex items-center justify-center space-x-2 mx-auto ${copied
+                    ? 'bg-slate-700/50 text-slate-400 border-slate-600/40 opacity-75'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                    }`}
                 >
-                  <span>🔗 Share Score Matrix</span>
+                  <span>{copied ? 'Copied!' : 'Share Score'}</span>
                 </button>
               </div>
             )}
