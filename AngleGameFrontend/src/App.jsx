@@ -16,9 +16,17 @@ function App() {
     fetch('http://localhost:7071/api/GetDailyAngle')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to retrieve daily puzzle state.');
+
         return res.json();
       })
       .then((data) => {
+        // 🕵️‍♂️ Spy on the exact incoming database keys
+        console.log("Database Payload Received:", data);
+        console.log("Lowercase check:", data.targetAngle);
+        console.log("Uppercase check:", data.TargetAngle);
+
+        setTargetAngle(data.TargetAngle || data.targetAngle || 0);
+
         setTargetAngle(data.targetAngle);
 
         const todayStr = new Date().toISOString().split('T')[0];
