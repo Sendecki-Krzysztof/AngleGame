@@ -202,19 +202,27 @@ function App() {
               </div>
 
               <div className="w-full max-h-40 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
-                {guessHistory.map((attempt, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-3 items-center text-center bg-slate-950/40 border border-slate-800/60 py-2 px-4 rounded-xl text-xs font-medium text-slate-300"
-                  >
-                    <span className="font-mono text-left text-slate-400 flex items-center space-x-1.5">
-                      <span className="text-[10px] text-slate-600 font-sans">#{index + 1}</span>
-                      <span className="text-slate-200 font-bold">{attempt.value}°</span>
-                    </span>
-                    <span className="text-sm font-bold text-blue-400 flex justify-center">{attempt.direction}</span>
-                    <span className="text-right text-[11px] text-slate-400 font-medium">{attempt.status}</span>
-                  </div>
-                ))}
+                {guessHistory
+                  .slice() // Creates a shallow copy so we don't mutate state
+                  .reverse() // Flips the render order
+                  .map((attempt) => {
+                    // Re-calculate the absolute chronological attempt number
+                    const chronologicalIndex = guessHistory.indexOf(attempt);
+
+                    return (
+                      <div
+                        key={chronologicalIndex}
+                        className="grid grid-cols-3 items-center text-center bg-slate-950/40 border border-slate-800/60 py-2 px-4 rounded-xl text-xs font-medium text-slate-300"
+                      >
+                        <span className="font-mono text-left text-slate-400 flex items-center space-x-1.5">
+                          <span className="text-[10px] text-slate-600 font-sans">#{chronologicalIndex + 1}</span>
+                          <span className="text-slate-200 font-bold">{attempt.value}°</span>
+                        </span>
+                        <span className="text-sm font-bold text-blue-400 flex justify-center">{attempt.direction}</span>
+                        <span className="text-right text-[11px] text-slate-400 font-medium">{attempt.status}</span>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           )}
