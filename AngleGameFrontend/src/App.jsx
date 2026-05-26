@@ -14,7 +14,6 @@ function App() {
   const MAX_ATTEMPTS = 4;
 
   useEffect(() => {
-    // 1. 🌍 Calculate current universal UTC calendar string
     const utcDate = new Date();
     const year = utcDate.getUTCFullYear();
     const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
@@ -23,8 +22,7 @@ function App() {
 
     setGameDate(todayStr);
 
-    // 2. Query the backend engine using the global timeline
-    fetch(`https://angle-game-api-b9dtbce4f8g4cxhq.northcentralus-01.azurewebsites.net/api/getdailyangle
+    fetch(`https://angle-game-api-b9dtbce4f8g4cxhq.northcentralus-01.azurewebsites.net/api/GetDailyAngle
 ?date=${todayStr}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to retrieve daily puzzle state.');
@@ -42,7 +40,6 @@ function App() {
           setTargetAngle(0);
         }
 
-        // 3. 📦 Load state safely using the dedicated UTC key string
         const cacheKey = `vektor_state_${todayStr}`;
         const savedState = localStorage.getItem(cacheKey);
 
@@ -69,20 +66,15 @@ function App() {
     e.preventDefault();
     let guessNum = parseInt(currentGuess, 10);
 
-    // 1. Validate it's a real number and not a negative value
     if (isNaN(guessNum) || guessNum < 0) return;
 
-    // 2. Wrap around angles using modulo 360 (e.g., 360 -> 0, 370 -> 10, 450 -> 90)
     guessNum = guessNum % 360;
 
-    // 3. Prevent duplicate attempts
     const alreadyGuessed = guessHistory.some(attempt => attempt.value === guessNum);
     if (alreadyGuessed) {
       setCurrentGuess('');
       return;
     }
-
-    // 4. Proximity validation math
     const diff = Math.abs(targetAngle - guessNum);
     let status = 'Cold';
     let indicatorEmoji = '⬛';
@@ -104,15 +96,12 @@ function App() {
     const direction = guessNum < targetAngle ? 'Higher ⬆️' : 'Lower⬇️';
     const isWon = diff === 0;
 
-    // 5. Construct the updated history array object matrix
     const newHistory = [...guessHistory, { value: guessNum, direction, status, emoji: indicatorEmoji }];
 
-    // 6. Update React App State layout matrix
     setGuessHistory(newHistory);
     setCurrentGuess('');
     setGameOver(isWon);
 
-    // 7. 📦 Lock down the state under your clean UTC date-stamped key format
     const cacheKey = `vektor_state_${gameDate}`;
     localStorage.setItem(cacheKey, JSON.stringify({
       history: newHistory,

@@ -9,14 +9,12 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
 
-        // Clear the expanded pixel frame buffer
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
         const radius = 130;
 
-        // Standard baseline angles to match the original layout rotation behavior
         const baselineOffsetAngle = 30 * Math.PI / 180;
 
         const baseEndX = cx + radius * Math.cos(baselineOffsetAngle);
@@ -25,18 +23,15 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
         const terminalEndX = cx + radius * Math.cos(baselineOffsetAngle - (targetAngle * Math.PI) / 180);
         const terminalEndY = cy + radius * Math.sin(baselineOffsetAngle - (targetAngle * Math.PI) / 180);
 
-        // --- 1. Draw Geometric Curved Indicator Arc ---
-        ctx.strokeStyle = "#38bdf8"; // Vibrant Sky Blue Arc
+        ctx.strokeStyle = "#38bdf8";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(cx, cy, 40, baselineOffsetAngle, baselineOffsetAngle - (targetAngle * Math.PI) / 180, true);
         ctx.stroke();
 
-        // --- 2. Draw Chronologically Fading Onion-Skin Guess Lines ---
         const totalGuesses = guessHistory.length;
 
         guessHistory.forEach((attempt, index) => {
-            // ✅ Safety Hydration Check: Read .value if object, handle raw number gracefully as fallback
             const guessValue = attempt && typeof attempt === 'object' ? attempt.value : attempt;
 
             if (guessValue === undefined || isNaN(guessValue)) return;
@@ -64,8 +59,6 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
             ctx.stroke();
         });
         ctx.setLineDash([]);
-
-        // --- 3. Draw Base Reference Ray Line ---
         ctx.strokeStyle = "#f97316"; // Bright Orange Base Ray
         ctx.lineWidth = 3.5;
         ctx.lineCap = "round";
@@ -74,14 +67,12 @@ function AngleCanvas({ targetAngle, guessHistory = [] }) {
         ctx.lineTo(baseEndX, baseEndY);
         ctx.stroke();
 
-        // --- 4. Draw Mystery Terminal Arm Vector Ray ---
         ctx.strokeStyle = "#f8fafc"; // Crisp Slate-White for the target ray
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.lineTo(terminalEndX, terminalEndY);
         ctx.stroke();
 
-        // --- 5. Draw Central Node Vertex Pin ---
         ctx.fillStyle = "#e2e8f0"; // Light slate core pin
         ctx.beginPath();
         ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
