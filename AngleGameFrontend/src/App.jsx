@@ -23,7 +23,7 @@ function App() {
     setGameDate(todayStr);
 
     // 2. Use the dynamic variable here
-    fetch(`${API_BASE}/api/GetDailyAngle?date=${todayStr}`)
+    fetch(`${API_BASE_URL}/api/GetDailyAngle?date=${todayStr}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to retrieve daily puzzle state.');
         return res.json();
