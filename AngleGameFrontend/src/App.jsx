@@ -76,14 +76,14 @@ function App() {
       return;
     }
     const diff = Math.abs(targetAngle - guessNum);
-    let status = 'Cold';
-    let indicatorEmoji = '⬛';
+    let status = 'Freezing!';
+    let indicatorEmoji = '🥶';
 
     if (diff === 0) {
-      status = 'Perfect!';
-      indicatorEmoji = '🟩';
+      status = 'ON FIRE!';
+      indicatorEmoji = '🔥';
     } else if (diff <= 3) {
-      status = 'Boiling! 🔥';
+      status = 'Boiling!';
       indicatorEmoji = '🟥';
     } else if (diff <= 10) {
       status = 'Hot!';
@@ -91,7 +91,20 @@ function App() {
     } else if (diff <= 25) {
       status = 'Warm';
       indicatorEmoji = '🟨';
+    } else if (diff <= 45) {
+      status = 'Luke-warm';
+      indicatorEmoji = '⬜';
+    } else if (diff <= 75) {
+      status = 'Chilly';
+      indicatorEmoji = '🟪';
+    } else if (diff <= 120) {
+      status = 'Cold';
+      indicatorEmoji = '🟦';
+    } else {
+      status = 'Freezing!';
+      indicatorEmoji = '🥶';
     }
+
 
     const direction = guessNum === targetAngle ? 'Perfect!' : guessNum < targetAngle ? 'Higher ⬆️' : 'Lower ⬇️';
     const isWon = diff === 0;
