@@ -5,13 +5,11 @@ on:
     branches:
       - main
       - dev
-
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
       - dev
-
   workflow_dispatch:
 
 env:
@@ -22,10 +20,6 @@ jobs:
   build-and-deploy:
     if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
-
-    permissions:
-      id-token: write
-      contents: read
 
     steps:
       - name: Checkout repository
@@ -42,30 +36,22 @@ jobs:
             echo "Deploying backend to DEV: angle-game-api-dev"
           fi
 
-      - name: Verify backend folder
-        shell: bash
-        run: |
-          echo "Backend path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
-          ls -la
-          ls -la "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
-          test -f "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/host.json"
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Validate requirements file exists
-        shell: bash
+      - name: Create virtual environment and install dependencies
+        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
         run: |
-          test -f "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/requirements.txt"
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
 
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CAE011B692F245AD89F8CD7180352500 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4FF360001B3B4B53A75C969D5A87D5EF }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E59F554249CD46D7BD7D5BC2D916943F }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
