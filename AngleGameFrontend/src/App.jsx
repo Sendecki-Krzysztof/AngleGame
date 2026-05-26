@@ -93,7 +93,7 @@ function App() {
       indicatorEmoji = '🟨';
     }
 
-    const direction = guessNum < targetAngle ? 'Higher ⬆️' : 'Lower⬇️';
+    const direction = guessNum === targetAngle ? 'Perfect!' : guessNum < targetAngle ? 'Higher ⬆️' : 'Lower ⬇️';
     const isWon = diff === 0;
 
     const newHistory = [...guessHistory, { value: guessNum, direction, status, emoji: indicatorEmoji }];
