@@ -11,7 +11,7 @@ function App() {
   const [error, setError] = useState(null);
   const [gameDate, setGameDate] = useState('');
 
-  const MAX_ATTEMPTS = 4;
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071';
 
   useEffect(() => {
     const utcDate = new Date();
@@ -22,8 +22,8 @@ function App() {
 
     setGameDate(todayStr);
 
-    fetch(`https://angle-game-api-b9dtbce4f8g4cxhq.northcentralus-01.azurewebsites.net/api/GetDailyAngle
-?date=${todayStr}`)
+    // 2. Use the dynamic variable here
+    fetch(`${API_BASE}/api/GetDailyAngle?date=${todayStr}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to retrieve daily puzzle state.');
         return res.json();
