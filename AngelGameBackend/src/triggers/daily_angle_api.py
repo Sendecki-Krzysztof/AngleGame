@@ -1,23 +1,25 @@
 import hashlib
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 import azure.functions as func
 
 api_blueprint = func.Blueprint()
 
 SECRET_SALT = "VektorSuperSecretSaltKey2026"
 
-
 @api_blueprint.route(route="GetDailyAngle", methods=["GET"])
 def GetDailyAngle(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Calculating deterministic daily angle.")
 
+    central_standard_time = datetime.now(ZoneInfo("America/Chicago"))
+    timezone
     try:
         # Read the target date parameter (or fall back to server UTC)
         target_date = req.params.get('date')
         if not target_date:
-            target_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            target_date = central_standard_time.strftime("%Y-%m-%d")
 
         seed_string = f"{target_date}-{SECRET_SALT}".encode('utf-8')
         hash_digest = hashlib.sha256(seed_string).hexdigest()
@@ -27,7 +29,6 @@ def GetDailyAngle(req: func.HttpRequest) -> func.HttpResponse:
         game_payload = {
             "gameId": target_date,
             "targetAngle": target_angle,
-            "tolerances": {"hot": 5, "warm": 15},
             "status": "success",
         }
 

@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import AngleCanvas from './components/AngleCanvas';
-// Cause I need something to break the monotony of the single file for 
-// now, and also wanted to give the canvas a bit more breathing room in the main component. Plus, 
-// it's a nice way to isolate the drawing logic and keep App.jsx focused on game state and UI.
 function App() {
   const [copied, setCopied] = useState(false);
   const [targetAngle, setTargetAngle] = useState(null);
