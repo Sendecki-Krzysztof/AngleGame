@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AngleCanvas from './components/AngleCanvas';
-
+// Cause I need something to break the monotony of the single file for now, and also wanted to give the canvas a bit more breathing room in the main component. Plus, it's a nice way to isolate the drawing logic and keep App.jsx focused on game state and UI.
 function App() {
   const [copied, setCopied] = useState(false);
   const [targetAngle, setTargetAngle] = useState(null);
@@ -11,7 +11,7 @@ function App() {
   const [error, setError] = useState(null);
   const [gameDate, setGameDate] = useState('');
 
-  const MAX_ATTEMPTS = 4;
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071';
 
   useEffect(() => {
     const utcDate = new Date();
@@ -22,8 +22,7 @@ function App() {
 
     setGameDate(todayStr);
 
-    fetch(`https://angle-game-api-b9dtbce4f8g4cxhq.northcentralus-01.azurewebsites.net/api/GetDailyAngle
-?date=${todayStr}`)
+    fetch(`${API_BASE_URL}/api/GetDailyAngle?date=${todayStr}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to retrieve daily puzzle state.');
         return res.json();
@@ -76,14 +75,14 @@ function App() {
       return;
     }
     const diff = Math.abs(targetAngle - guessNum);
-    let status = 'Cold';
-    let indicatorEmoji = '⬛';
+    let status = 'Freezing!';
+    let indicatorEmoji = '🥶';
 
     if (diff === 0) {
-      status = 'Perfect!';
-      indicatorEmoji = '🟩';
+      status = 'ON FIRE!';
+      indicatorEmoji = '🔥';
     } else if (diff <= 3) {
-      status = 'Boiling! 🔥';
+      status = 'Boiling!';
       indicatorEmoji = '🟥';
     } else if (diff <= 10) {
       status = 'Hot!';
@@ -91,7 +90,20 @@ function App() {
     } else if (diff <= 25) {
       status = 'Warm';
       indicatorEmoji = '🟨';
+    } else if (diff <= 45) {
+      status = 'Luke-warm';
+      indicatorEmoji = '⬜';
+    } else if (diff <= 75) {
+      status = 'Chilly';
+      indicatorEmoji = '🟪';
+    } else if (diff <= 120) {
+      status = 'Cold';
+      indicatorEmoji = '🟦';
+    } else {
+      status = 'Freezing!';
+      indicatorEmoji = '🥶';
     }
+
 
     const direction = guessNum === targetAngle ? 'Perfect!' : guessNum < targetAngle ? 'Higher ⬆️' : 'Lower ⬇️';
     const isWon = diff === 0;
