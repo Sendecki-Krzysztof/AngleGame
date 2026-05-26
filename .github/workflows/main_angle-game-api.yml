@@ -6,10 +6,9 @@ on:
       - main
       - dev
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
     branches:
       - main
-      - dev
   workflow_dispatch:
 
 env:
