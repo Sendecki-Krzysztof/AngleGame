@@ -14,7 +14,6 @@ on:
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: "AngelGameBackend"
-  PYTHON_VERSION: "3.13"
 
 jobs:
   build-and-deploy:
@@ -25,25 +24,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python version
-        uses: actions/setup-python@v5
+      - name: "Login via Azure CLI"
+        uses: azure/login@v2
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Create virtual environment and install dependencies
-        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
+          # Use the Service Principal credentials we tried earlier
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CAE011B692F245AD89F8CD7180352500 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4FF360001B3B4B53A75C969D5A87D5EF }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E59F554249CD46D7BD7D5BC2D916943F }}
 
       - name: "Deploy to Azure Functions"
-        uses: Azure/functions-action@v1
-        with:
-          # Dynamically target the Prod App or the Dev App
-          app-name: ${{ (github.event_name == 'push' && github.ref_name == 'main') && 'angle-game-api' || 'angle-game-api-dev' }}
+        run: |
+          # Use CLI to target the correct app based on branch
+          APP_NAME=${{ (github.event_name == 'push' && github.ref_name == 'main') && 'angle-game-api' || 'angle-game-api-dev' }}
 
-          # Dynamically use the correct VIP pass
-          publish-profile: ${{ (github.event_name == 'push' && github.ref_name == 'main') && secrets.AZURE_PUBLISH_PROFILE_PROD || secrets.AZURE_PUBLISH_PROFILE_DEV }}
-
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          # Force the deployment using the CLI
+          az functionapp deployment source config-zip \
+            -g Vektor \
+            -n $APP_NAME \
+            --src ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
