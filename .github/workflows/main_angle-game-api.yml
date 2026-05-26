@@ -1,31 +1,62 @@
-name: Inject Azure PR Permissions
+name: Azure Function Apps CI/CD
 
 on:
   push:
     branches:
-      - main # Only runs when you push or merge directly into main
+      - main
+      - dev
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
 
-permissions:
-  id-token: write
-  contents: read
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: "AngelGameBackend"
+  PYTHON_VERSION: "3.13"
 
 jobs:
-  inject-credentials:
+  build-and-deploy:
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Determine target Function App
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "main" ]]; then
+            echo "APP_NAME=angle-game-api" >> $GITHUB_ENV
+            echo "Deploying backend to PROD: angle-game-api"
+          else
+            echo "APP_NAME=angle-game-api-dev" >> $GITHUB_ENV
+            echo "Deploying backend to DEV: angle-game-api-dev"
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Create virtual environment and install dependencies
+        working-directory: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CAE011B692F245AD89F8CD7180352500 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4FF360001B3B4B53A75C969D5A87D5EF }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E59F554249CD46D7BD7D5BC2D916943F }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Force Add PR Federated Credential
-        run: |
-          az ad app federated-credential create \
-            --id "cae011b6-92f2-45ad-89f8-cd7180352500" \
-            --parameters '{"name":"github-pr-access","issuer":"https://token.actions.githubusercontent.com","subject":"repo:Sendecki-Krzysztof/AngleGame:pull_request","description":"Allow PR testing","audience":["api://AzureADTokenExchange"]}'
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.APP_NAME }}
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          remote-build: true
+          respect-funcignore: true
