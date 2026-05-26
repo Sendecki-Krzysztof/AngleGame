@@ -31,7 +31,7 @@ jobs:
           api_location: ""
           output_location: "dist"
         env:
-          VITE_API_URL: "https://angle-game-api.azurewebsites.net"
+          VITE_API_URL: "https://angle-game-api-b9dtbce4f8g4cxhq.northcentralus-01.azurewebsites.net"
 
   deploy_staging:
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref_name == 'dev')
@@ -52,7 +52,7 @@ jobs:
           api_location: ""
           output_location: "dist"
         env:
-          VITE_API_URL: "https://angle-game-api-dev.azurewebsites.net"
+          VITE_API_URL: "https://angle-game-api-dev-amgsbggzdrfndma0.centralus-01.azurewebsites.net"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
