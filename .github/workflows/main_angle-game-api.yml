@@ -5,40 +5,72 @@ on:
     branches:
       - main
       - dev
+
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
       - dev
+
   workflow_dispatch:
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: "AngelGameBackend"
+  PYTHON_VERSION: "3.13"
 
 jobs:
   build-and-deploy:
     if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
 
+    permissions:
+      id-token: write
+      contents: read
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: "Login via Azure CLI"
+      - name: Determine target Function App
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "main" ]]; then
+            echo "APP_NAME=angle-game-api" >> $GITHUB_ENV
+            echo "Deploying backend to PROD: angle-game-api"
+          else
+            echo "APP_NAME=angle-game-api-dev" >> $GITHUB_ENV
+            echo "Deploying backend to DEV: angle-game-api-dev"
+          fi
+
+      - name: Verify backend folder
+        shell: bash
+        run: |
+          echo "Backend path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+          ls -la
+          ls -la "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}"
+          test -f "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/host.json"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Validate requirements file exists
+        shell: bash
+        run: |
+          test -f "${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/requirements.txt"
+
+      - name: Login to Azure
         uses: azure/login@v2
         with:
-          # Use the Service Principal credentials we tried earlier
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_CAE011B692F245AD89F8CD7180352500 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4FF360001B3B4B53A75C969D5A87D5EF }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E59F554249CD46D7BD7D5BC2D916943F }}
 
-      - name: "Deploy to Azure Functions"
-        run: |
-          # Use CLI to target the correct app based on branch
-          APP_NAME=${{ (github.event_name == 'push' && github.ref_name == 'main') && 'angle-game-api' || 'angle-game-api-dev' }}
-
-          # Force the deployment using the CLI
-          az functionapp deployment source config-zip \
-            -g Vektor \
-            -n $APP_NAME \
-            --src ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.APP_NAME }}
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          remote-build: true
+          respect-funcignore: true
