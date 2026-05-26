@@ -32,7 +32,7 @@ jobs:
           api_location: ""
           output_location: "dist"
         env:
-          VITE_API_URL: "https://angle-game-api-dev.azurewebsites.net"
+          VITE_API_URL: ${{ github.base_ref == 'main' && 'https://angle-game-api-dev.azurewebsites.net' || github.ref_name == 'main' && 'https://angle-game-api.azurewebsites.net' || 'https://angle-game-api-dev.azurewebsites.net' }}
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
