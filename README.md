@@ -6,20 +6,21 @@
 
 <table>
   <tr>
-    <td bg="#0f172a" style="background-color: #0f172a; border: 1px solid #1e293b; border-bottom: none; border-radius: 8px 8px 0 0; padding: 8px 16px;">
-      <span style="color: #ef4444;">●</span> <span style="color: #f59e0b;">●</span> <span style="color: #10b981;">●</span> 
-      <main style="display: inline; font-family: monospace; color: #94a3b8; margin-left: 12px;">vektor.wtf</main>
+    <td style="background-color: #0f172a; border: 1px solid #1e293b; border-bottom: none; border-radius: 8px 8px 0 0; padding: 10px 16px; user-select: none;">
+      <span style="color: #ef4444; font-size: 14px;">●</span> 
+      <span style="color: #f59e0b; font-size: 14px;">●</span> 
+      <span style="color: #10b981; font-size: 14px;">●</span> 
+      <span style="font-family: monospace; color: #94a3b8; margin-left: 12px; font-size: 13px;">https://www.vektor.wtf</span>
     </td>
   </tr>
   <tr>
-    <td style="border: 1px solid #1e293b; padding: 24px; text-align: center; background-color: #020617; border-radius: 0 0 8px 8px;">
-      <a href="[https://www.vektor.wtf](https://www.vektor.wtf)" target="_blank" style="font-weight: bold; color: #f97316; text-decoration: none; font-size: 16px;">
-        🚀 Launch Live App Launchpad →
+    <td style="border: 1px solid #1e293b; padding: 0; background-color: #020617; border-radius: 0 0 8px 8px; overflow: hidden;">
+      <a href="https://www.vektor.wtf" target="_blank">
+        <img src="AngleGameFrontend/public/og-preview.png" alt="VEKTOR Gameplay Preview" style="width: 100%; display: block; border: none;" />
       </a>
     </td>
   </tr>
 </table>
----
 
 ## 🛠️ Architecture Overview
 
@@ -29,22 +30,21 @@ The application is cleanly divided into decoupled client and server environments
 * **Backend:** Serverless **Azure Function App** running **Python 3.13**, generating deterministic, daily game profiles salted with a custom cryptographic hash.
 * **State & Caching:** Client-side persistence via structured `localStorage` tied entirely to API-supplied execution IDs, avoiding time-zone drift anomalies across different client locales.
 
----
-
 ## 🚀 CI/CD Pipeline & Infrastructure
 
 This repository utilizes a fully automated **GitHub Actions** deployment pipeline. Infrastructure isolation ensures development sandboxes never interfere with the production client base.
-
-[ Push to dev ]  ────────────────>  [ Job: Deploy Staging ]
-                                      ├── Builds Vite Frontend (Dev Settings)
-                                      ├── Bakes Dev API URL Environment Variable
-                                      └── Deploys to Isolated Staging Preview URL
-
-[ Push to main ] ────────────────>  [ Job: Deploy Production ]
-                                      ├── Builds Vite Frontend (Prod Settings)
-                                      ├── Bakes Production API URL Environment Variable
-                                      └── Deploys Live to Custom Domain (vektor.wtf)
-
+```
+[ Push to dev ]                      [ Push to main ]
+          │                                    │
+          ▼                                    ▼
+┌──────────────────────┐             ┌────────────────────────┐
+│    Deploy Staging    │             │   Deploy Production    │
+├──────────────────────┤             ├────────────────────────┤
+│ • Builds Vite App    │             │ • Builds Vite App      │
+│ • Bakes Dev API URL  │             │ • Bakes Prod API URL   │
+│ • Pushes to Preview  │             │ • Pushes to Live Domain│
+└──────────────────────┘             └────────────────────────┘
+```
 ### Environment Synchronization
 
 | Environment | Frontend Origin | API Endpoint |
