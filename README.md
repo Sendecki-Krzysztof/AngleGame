@@ -2,8 +2,23 @@
 
 **VEKTOR** is a clean, minimalist web game where players try to guess a daily target angle between 1° and 359°. Built with a highly responsive React/Vite frontend and powered by a serverless Python backend on Azure, it demonstrates a robust, automated multi-environment cloud lifecycle.
 
-🔗 **Live Production App:** [vektor.wtf](https://www.vektor.wtf)
+🔗 **Live Production App:**
 
+<table>
+  <tr>
+    <td bg="#0f172a" style="background-color: #0f172a; border: 1px solid #1e293b; border-bottom: none; border-radius: 8px 8px 0 0; padding: 8px 16px;">
+      <span style="color: #ef4444;">●</span> <span style="color: #f59e0b;">●</span> <span style="color: #10b981;">●</span> 
+      <main style="display: inline; font-family: monospace; color: #94a3b8; margin-left: 12px;">vektor.wtf</main>
+    </td>
+  </tr>
+  <tr>
+    <td style="border: 1px solid #1e293b; padding: 24px; text-align: center; background-color: #020617; border-radius: 0 0 8px 8px;">
+      <a href="[https://www.vektor.wtf](https://www.vektor.wtf)" target="_blank" style="font-weight: bold; color: #f97316; text-decoration: none; font-size: 16px;">
+        🚀 Launch Live App Launchpad →
+      </a>
+    </td>
+  </tr>
+</table>
 ---
 
 ## 🛠️ Architecture Overview
@@ -20,17 +35,15 @@ The application is cleanly divided into decoupled client and server environments
 
 This repository utilizes a fully automated **GitHub Actions** deployment pipeline. Infrastructure isolation ensures development sandboxes never interfere with the production client base.
 
+[ Push to dev ]  ────────────────>  [ Job: Deploy Staging ]
+                                      ├── Builds Vite Frontend (Dev Settings)
+                                      ├── Bakes Dev API URL Environment Variable
+                                      └── Deploys to Isolated Staging Preview URL
 
-   [ Push to dev ]                      [ Push to main ]
-          │                                    │
-          ▼                                    ▼
-┌──────────────────────┐             ┌──────────────────────┐
-│    Deploy Staging    │             │  Deploy Production   │
-├──────────────────────┤             ├──────────────────────┤
-│ • Builds Vite App    │             │ • Builds Vite App    │
-│ • Bakes Dev API URL  │             │ • Bakes Prod API URL │
-│ • Pushes to Preview  │             │ • Pushes to Live Domain│
-└──────────────────────┘             └──────────────────────┘
+[ Push to main ] ────────────────>  [ Job: Deploy Production ]
+                                      ├── Builds Vite Frontend (Prod Settings)
+                                      ├── Bakes Production API URL Environment Variable
+                                      └── Deploys Live to Custom Domain (vektor.wtf)
 
 ### Environment Synchronization
 
