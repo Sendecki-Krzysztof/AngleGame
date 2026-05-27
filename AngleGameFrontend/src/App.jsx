@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AngleCanvas from './components/AngleCanvas';
-// Cause I need something to break the monotony of the single file for 
-// now, and also wanted to give the canvas a bit more breathing room in the main component. Plus, 
-// it's a nice way to isolate the drawing logic and keep App.jsx focused on game state and UI.
+
 function App() {
   const [copied, setCopied] = useState(false);
   const [targetAngle, setTargetAngle] = useState(null);
@@ -16,15 +14,8 @@ function App() {
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071';
 
   useEffect(() => {
-    const utcDate = new Date();
-    const year = utcDate.getUTCFullYear();
-    const month = String(utcDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(utcDate.getUTCDate()).padStart(2, '0');
-    const todayStr = `${year}-${month}-${day}`;
 
-    setGameDate(todayStr);
-
-    fetch(`${API_BASE_URL}/api/GetDailyAngle?date=${todayStr}`)
+    fetch(`${API_BASE_URL}/api/GetDailyAngle`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to retrieve daily puzzle state.');
         return res.json();
@@ -41,7 +32,7 @@ function App() {
           setTargetAngle(0);
         }
 
-        const cacheKey = `vektor_state_${todayStr}`;
+        const cacheKey = `vektor_state_${data.gameId}`;
         const savedState = localStorage.getItem(cacheKey);
 
         if (savedState) {

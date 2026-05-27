@@ -30,6 +30,7 @@ jobs:
           app_location: "/AngleGameFrontend"
           api_location: ""
           output_location: "dist"
+          production_branch: "main"
         env:
           VITE_API_URL: "https://angle-game-api-b9dtbce4f8g4cxhq.northcentralus-01.azurewebsites.net"
 
@@ -51,6 +52,7 @@ jobs:
           app_location: "/AngleGameFrontend"
           api_location: ""
           output_location: "dist"
+          production_branch: "main"
         env:
           VITE_API_URL: "https://angle-game-api-dev-amgsbggzdrfndma0.centralus-01.azurewebsites.net"
 
