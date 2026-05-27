@@ -22,6 +22,7 @@ function App() {
       })
       .then((data) => {
         console.log("Vector Payload Received:", data);
+        console.log("Prod here we come!");
 
         const incomingAngle = data.targetAngle !== undefined ? data.targetAngle : data.TargetAngle;
 
@@ -33,6 +34,7 @@ function App() {
         }
 
         const cacheKey = `vektor_state_${data.gameId}`;
+        setGameDate(data.gameId)
         const savedState = localStorage.getItem(cacheKey);
 
         if (savedState) {

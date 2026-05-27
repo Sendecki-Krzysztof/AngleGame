@@ -7,7 +7,7 @@ import azure.functions as func
 
 api_blueprint = func.Blueprint()
 
-SECRET_SALT = "VektorSuperSecretSaltKey2026"
+SECRET_SALT = "VektorSuperSecretHiddenKey2026"
 
 @api_blueprint.route(route="GetDailyAngle", methods=["GET"])
 def GetDailyAngle(req: func.HttpRequest) -> func.HttpResponse:
